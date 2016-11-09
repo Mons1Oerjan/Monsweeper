@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html ng-app="MyApp">
+    <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>
+        <script>
+            var app = angular.module("MyApp", []);
+            app.controller("MinesweeperController", ["$scope", function($scope) {
+
+                var getSpot = function(minefield, row, column){
+                    return minefield.rows[row].spots[column];
+                }
+
+                var placeRandomMine = function(minefield){
+                    var row = Math.round(Math.random() * 8);
+                    var column = Math.round(Math.random() * 8);
+                    var spot = getSpot(minefield, row, column);
+                    if (spot.content == 'mine'){ //get rid of duplicates
+                        return;
+                    }
+                    spot.content = "mine";
+                }
+
+                var placeManyRandomMines = function(minefield){
+                    for (var i = 0; i < 10; i++){
+                        placeRandomMine(minefield);
+                    }
+                }
+
+                var calculateNumber = function(minefield, row, column){
+                    var thisSpot = getSpot(minefield, row, column);
+                    if (thisSpot.content == 'mine'){
+                        return;
+                    }
+                    var minecount = 0;
+                    if (row > 0){
+                        if (column > 0) {
+                            var spot = getSpot(minefield, row-1, column-1);
+                            if (spot.content == 'mine'){
+                                minecount++;
+                            }
+                        }
+                        var spot = getSpot(minefield, row-1, column);
+                        if (spot.content == 'mine'){
+                            minecount++;
+                        }
+                        if (column < 8){
+                            var spot = getSpot(minefield, row-1, column+1);
+                            if (spot.content == 'mine'){
+                                minecount++;
+                            }
+                        }
+                    }
+                    if (column > 0){
+                        var spot = getSpot(minefield, row, column-1);
+                        if (spot.content == 'mine'){
+                            minecount++;
+                        }
+                    }
+                    if (column < 8){
+                        var spot = getSpot(minefield, row, column+1);
+                        if (spot.content == 'mine'){
+                            minecount++;
+                        }
+                    }
+                    if (row < 8){
+                        if (column > 0){
+                            var spot = getSpot(minefield, row + 1, column - 1);
+                            if(spot.content == "mine") {
+                                minecount++;
+                            }
+                        }
+                        var spot = getSpot(minefield, row + 1, column);
+                        if(spot.content == "mine") {
+                            minecount++;
+                        }
+                        if(column < 8) {
+                            var spot = getSpot(minefield, row + 1, column + 1);
+                            if(spot.content == "mine") {
+                                minecount++;
+                            }
+                        }
+                    }
+                    if (minecount > 0){
+                        thisSpot.content = minecount;
+                    }
+                }
+
+                var calculateAllNumbers = function(minefield, rows, cols){
+                    for (var y = 0; y < rows; y++){
+                        for (x = 0; x < cols; x++){
+                            calculateNumber(minefield, x, y);
+                        }
+                    }
+                }
+
+                var hasWon = function(minefield){
+                    for (var y = 0; y < 9; y++){
+                        for (var x = 0; x < 9; x++){
+                            var spot = getSpot(minefield, x, y);
+                            if (!spot.isHidden && spot.content != 'mine'){
+                                return false;
+                            }
+                        }
+                    }
+                    return true;
+                }
+
+                var createMineField = function(){
+
+                    var minefield = {};
+                    minefield.rows = [];
+
+                    var gridsize = {};
+                    gridsize.rows = 9;
+                    gridsize.cols = 9;
+
+                    for (var i = 0; i < gridsize.rows; i++){
+                        var row = {};
+                        row.spots = [];
+                        for (var j = 0; j < gridsize.cols; j++){
+                            var spot = {};
+                            spot.content = "empty";
+                            spot.isHidden = true;
+                            row.spots.push(spot);
+                        }
+                        minefield.rows.push(row);
+                    }
+                    placeManyRandomMines(minefield);
+                    calculateAllNumbers(minefield, gridsize.rows, gridsize.cols);
+                    return minefield;
+                };
+                $scope.minefield = createMineField(); //in angular, we always have to create things inside the scope. 
+                $scope.openSpot = function(spot){
+                    //if (spot.isHidden){
+                        spot.isHidden = false;
+                        if (spot.content == 'mine'){
+                            $scope.isLostMessageVisible = true;
+                        } else {
+                            if (hasWon($scope.minefield)){
+                                $scope.isWinMessageVisible = true;
+                            }
+                        }
+                    //}
+                };
+        }]);
+        </script>
+        <style>
+            .minefield {
+                line-height : 0;
+                border-spacing : 0;
+            }
+            .minefield td {
+                padding : 0;
+            }
+        </style>
+    </head>
+    <body ng-controller="MinesweeperController">
+        <h1>Monsweeper</h1>
+        <table border="1" class="minefield">
+            <tr ng-repeat="row in minefield.rows"> <!-- loop over rows-->
+                <td ng-repeat="spot in row.spots" ng-click="openSpot(spot)"> <!-- loop over spots-->
+                    <img ng-if="spot.isHidden" src="covered.png"/>
+                    <img ng-if="!spot.isHidden && spot.content == 'empty'" src="empty.png"/>
+                    <img ng-if="!spot.isHidden && spot.content == 'mine'" src="mine.png"/>
+                    <img ng-if="!spot.isHidden && spot.content == 1" src="number-1.png"/>
+                    <img ng-if="!spot.isHidden && spot.content == 2" src="number-2.png"/>
+                    <img ng-if="!spot.isHidden && spot.content == 3" src="number-3.png"/>
+                    <img ng-if="!spot.isHidden && spot.content == 4" src="number-4.png"/>
+                    <img ng-if="!spot.isHidden && spot.content == 5" src="number-5.png"/>
+                    <img ng-if="!spot.isHidden && spot.content == 6" src="number-6.png"/>
+                    <img ng-if="!spot.isHidden && spot.content == 7" src="number-7.png"/>
+                    <img ng-if="!spot.isHidden && spot.content == 8" src="number-8.png"/>
+                </td>
+            </tr>
+        </table>
+        <h3 ng-if="isWinMessageVisible">You Won!</h3>
+        <h3 ng-if="isLostMessageVisible">You Lost!</h3>
+    </body>
+</html>
