@@ -131,7 +131,6 @@
                 };
                 $scope.minefield = createMineField(); //in angular, we always have to create things inside the scope. 
                 $scope.openSpot = function(spot){
-                    //if (spot.isHidden){
                         spot.isHidden = false;
                         if (spot.content == 'mine'){
                             $scope.isLostMessageVisible = true;
@@ -140,7 +139,6 @@
                                 $scope.isWinMessageVisible = true;
                             }
                         }
-                    //}
                 };
         }]);
         </script>
@@ -158,7 +156,7 @@
         <h1>Monsweeper</h1>
         <table border="1" class="minefield">
             <tr ng-repeat="row in minefield.rows"> <!-- loop over rows-->
-                <td ng-repeat="spot in row.spots" ng-click="openSpot(spot)"> <!-- loop over spots-->
+                <td ng-repeat="spot in row.spots" ng-click="openSpot(spot)"> <!-- loop over spots in each row-->
                     <img ng-if="spot.isHidden" src="covered.png"/>
                     <img ng-if="!spot.isHidden && spot.content == 'empty'" src="empty.png"/>
                     <img ng-if="!spot.isHidden && spot.content == 'mine'" src="mine.png"/>
